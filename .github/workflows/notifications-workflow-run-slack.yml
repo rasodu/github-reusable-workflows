@@ -1,0 +1,44 @@
+name: Slack workflow run notification
+
+on:
+  workflow_call:
+  workflow_run:
+    workflows: ["*"]  # This is a wildcard pattern to match all workflows
+    types:
+      - requested
+      - completed
+jobs:
+  notify:
+    # Note that we must not define "SLACK_WEBHOOK_URL" as environment or secret variable in the action. We are setting it up in the self-hoted action runner.
+    runs-on: self-hosted
+    # Add a condition to prevent notification loops
+    #if: ${{ github.event.workflow.name != 'Slack workflow run notification' }}
+    steps:
+      - name: Send Slack Notification
+        run: |
+          # Get workflow details
+          WORKFLOW_NAME="${{ github.event.workflow_run.name }}"
+          WORKFLOW_URL="${{ github.event.workflow_run.html_url }}"
+          REPO="${{ github.repository }}"
+          
+          # Determine status based on action type
+          if [ "${{ github.event.action }}" == "requested" ]; then
+            STATUS="⏳ STARTED"
+          else
+            if [ "${{ github.event.workflow_run.conclusion }}" == "success" ]; then
+              STATUS="✅ COMPLETED SUCCESSFULLY"
+            else
+              STATUS="❌ FAILED - ${{ github.event.workflow_run.conclusion }}"
+            fi
+          fi
+          
+          MESSAGE="Workflow Notification:
+          Repository: ${{ github.repository }}
+          Workflow: $WORKFLOW_NAME
+          Status: $STATUS
+          Triggered by: ${{ github.event.workflow_run.actor.login }}
+          URL: $WORKFLOW_URL"
+          
+          curl -X POST -H 'Content-type: application/json' \
+            --data "{\"text\":\"$MESSAGE\"}" \
+            "$SLACK_WEBHOOK_URL"

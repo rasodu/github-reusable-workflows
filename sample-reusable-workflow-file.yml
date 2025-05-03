@@ -1,0 +1,13 @@
+name: Slack workflow run notification reusable
+
+on:
+  workflow_call:
+  workflow_run:
+    workflows: ["*"]
+    types:
+      - requested
+      - completed
+
+jobs:                                                                                                                                                                                                                                                                          
+   notify:                                                                                                                                                                                                                                                                      
+     uses: rasodu/github-actions-notifications/.github/workflows/notifications.yml@master
