@@ -10,4 +10,4 @@ on:
 
 jobs:                                                                                                                                                                                                                                                                          
    notify:                                                                                                                                                                                                                                                                      
-     uses: rasodu/github-reusable-workflows/.github/workflows/notifications.yml@master
+     uses: rasodu/github-reusable-workflows/.github/workflows/notifications-workflow-run-slack.yml@master
